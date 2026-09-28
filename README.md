@@ -1,54 +1,106 @@
-# AutoBots — Atividade prática ATVI
+# ATVI - AutoBots
 
-Implementação dos CRUDs de **Cliente, Documento, Endereço e Telefone**, conforme o enunciado e os diagramas UML da atividade. Projeto desenvolvido a partir de https://github.com/gerson-pn/atvi-autobots-microservico-spring, revisão `d5bdb729abee6e6d39b9e23aed202ebc66912ce9`.
+API para cadastro de clientes, documentos, telefones e endereços, desenvolvida com Java 17, Spring Boot 4.1.1, Spring Data JPA e banco H2. Baseada no projeto fornecido pelo professor Gerson Penha.
 
 ## Como executar
 
-Requisitos: **JDK 17**, variável `JAVA_HOME` apontando para o JDK e internet na primeira compilação para baixar as dependências. O Maven Wrapper está incluído; não é necessário instalar Maven separadamente.
+Requisitos: **JDK 17**, variável `JAVA_HOME` apontando para a pasta do JDK e internet na primeira execução. O Maven Wrapper está incluído; não é necessário instalar Maven ou um servidor de banco de dados.
 
-No PowerShell, entre na pasta `automanager` e execute:
+1. Extraia o ZIP e entre na pasta **`AutoBots-ATVI/automanager`**, onde estão `pom.xml`, `mvnw` e `mvnw.cmd`.
+2. No Windows, abra essa pasta no Explorador, digite `powershell` na barra de endereço e pressione Enter.
+3. Confira o Java:
+
+   ```powershell
+   java -version
+   javac -version
+   ```
+
+   Se `JAVA_HOME` ainda não estiver configurado, defina-o nessa janela. Substitua o caminho abaixo pela pasta do seu JDK:
+
+   ```powershell
+   $env:JAVA_HOME = "C:\Program Files\Java\jdk-17"
+   Test-Path "$env:JAVA_HOME\bin\javac.exe"
+   ```
+
+   O último comando deve retornar `True`. Essa configuração vale apenas para a janela atual.
+
+4. Execute os testes e compile:
+
+   ```powershell
+   .\mvnw.cmd clean verify
+   ```
+
+   Aguarde **`BUILD SUCCESS`**. A entrega foi verificada com **23 testes sem falhas**. A primeira execução pode demorar para baixar as dependências.
+
+5. Inicie a aplicação:
+
+   ```powershell
+   .\mvnw.cmd spring-boot:run
+   ```
+
+   Aguarde a mensagem `Started AutomanagerApplication` e acesse **http://localhost:8080/clientes**. Se não houver clientes, a resposta será `[]`.
+
+A porta padrão é **8080**. Mantenha o terminal aberto; para encerrar, pressione **Ctrl+C**. A aplicação é uma API: use as rotas abaixo para acessá-la; a raiz `/` não tem página inicial.
+
+Para usar outra porta, por exemplo 8081:
 
 ```powershell
-.\mvnw.cmd clean verify
-.\mvnw.cmd spring-boot:run
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--server.port=8081"
 ```
 
-No Linux/Ubuntu/macOS, dentro da mesma pasta:
+Nesse caso, use `http://localhost:8081` em todas as chamadas.
+
+No **Linux/Ubuntu**, com JDK 17 e `JAVA_HOME` configurados, abra o terminal na pasta `automanager` e execute:
 
 ```sh
 sh mvnw clean verify
 sh mvnw spring-boot:run
 ```
 
-O wrapper baixa o Maven compatível automaticamente. Use JDK 17 e configure `JAVA_HOME` para a instalação local do Java em cada sistema.
+Depois de compilar, também é possível iniciar pelo JAR, no Windows ou Linux:
 
-A API fica em `http://localhost:8080`. Para verificar no navegador, abra `http://localhost:8080/clientes` (inicialmente retorna `[]`). A atividade é um back-end: não há página gráfica na raiz.
-
-Também é possível executar o pacote gerado:
-
-```powershell
+```sh
 java -jar target/automanager-0.0.1-SNAPSHOT.jar
 ```
 
-No Eclipse, use **File > Import > Maven > Existing Maven Projects**, selecione `automanager` e configure o JDK 17. O projeto mantém Lombok, como na base; se o editor não reconhecer os getters/setters, configure o suporte ao Lombok do Eclipse. A compilação pelo Maven já processa essas anotações.
+Escolha uma forma de inicialização por vez. O H2 cria o banco na pasta **`automanager/data`** e mantém os dados entre execuções. Inicie sempre a partir da pasta `automanager`.
 
-## Operações disponíveis
+## Rotas
 
-Para cada recurso `clientes`, `documentos`, `enderecos` e `telefones`:
+URL base: **`http://localhost:8080`**. Envie JSON com `Content-Type: application/json`.
 
-| Método | Rota | Resultado |
+| Método | Rota | Operação |
 |---|---|---|
-| POST | `/{recurso}` | Insere e retorna o registro, ID e cabeçalho Location (201) |
-| GET | `/{recurso}` | Lista os registros (200) |
-| GET | `/{recurso}/{id}` | Seleciona pelo ID (200 ou 404) |
-| PUT | `/{recurso}/{id}` | Atualiza os campos informados (200 ou 404) |
-| DELETE | `/{recurso}/{id}` | Exclui o registro (204 ou 404) |
+| GET | `/clientes` | Listar clientes |
+| GET | `/clientes/{id}` | Consultar cliente |
+| POST | `/clientes` | Cadastrar cliente e, opcionalmente, seus dados associados |
+| PUT | `/clientes/{id}` | Atualizar cliente e dados associados informados |
+| DELETE | `/clientes/{id}` | Excluir cliente e seus dados associados |
+| GET | `/documentos` | Listar documentos |
+| GET | `/documentos/{id}` | Consultar documento |
+| POST | `/documentos?clienteId={clienteId}` | Cadastrar documento no cliente |
+| PUT | `/documentos/{id}` | Atualizar documento |
+| DELETE | `/documentos/{id}` | Excluir documento |
+| GET | `/telefones` | Listar telefones |
+| GET | `/telefones/{id}` | Consultar telefone |
+| POST | `/telefones?clienteId={clienteId}` | Cadastrar telefone no cliente |
+| PUT | `/telefones/{id}` | Atualizar telefone |
+| DELETE | `/telefones/{id}` | Excluir telefone |
+| GET | `/enderecos` | Listar endereços |
+| GET | `/enderecos/{id}` | Consultar endereço |
+| POST | `/enderecos?clienteId={clienteId}` | Cadastrar endereço no cliente |
+| PUT | `/enderecos/{id}` | Atualizar endereço |
+| DELETE | `/enderecos/{id}` | Excluir endereço |
 
-As rotas originais continuam disponíveis: `GET /cliente/cliente/{id}`, `GET /cliente/clientes`, `POST /cliente/cadastro`, `PUT /cliente/atualizar` e `DELETE /cliente/excluir`. Nas duas últimas, informe `id` no corpo JSON. Os demais recursos também aceitam aliases equivalentes no singular.
+Use os IDs retornados pela API. Nos cadastros de documento, telefone e endereço, `clienteId` é opcional: sem ele, o registro é criado sem vínculo com cliente. As rotas originais `/cliente/cadastro`, `/cliente/clientes`, `/cliente/cliente/{id}`, `/cliente/atualizar` e `/cliente/excluir` também continuam disponíveis; nas duas últimas, envie `id` no corpo.
 
-### Cadastro completo de cliente
+## Exemplos de JSON
 
-Envie este corpo em `POST /clientes` com `Content-Type: application/json`:
+Use Postman, Insomnia ou outro cliente HTTP para enviar os exemplos abaixo.
+
+### Cadastrar cliente — POST /clientes
+
+É possível enviar apenas `nome` ou cadastrar os dados associados juntos. Os IDs são gerados pelo banco; não os informe no cadastro. `dataCadastro` é preenchida automaticamente quando omitida. Datas usam `yyyy-MM-dd`.
 
 ```json
 {
@@ -57,74 +109,61 @@ Envie este corpo em `POST /clientes` com `Content-Type: application/json`:
   "dataNascimento": "2000-05-15",
   "endereco": {
     "estado": "SP",
-    "cidade": "São Paulo",
+    "cidade": "Santos",
     "bairro": "Centro",
     "rua": "Rua das Flores",
     "numero": "100",
-    "codigoPostal": "01001000",
+    "codigoPostal": "11000000",
     "informacoesAdicionais": "Apartamento 12"
   },
   "documentos": [{"tipo": "RG", "numero": "123456789"}],
-  "telefones": [{"ddd": "11", "numero": "999999999"}]
+  "telefones": [{"ddd": "13", "numero": "999999999"}]
 }
 ```
 
-Os IDs são gerados pelo banco. `dataCadastro` é preenchida automaticamente quando omitida. Datas usam `yyyy-MM-dd`, com fuso UTC.
+### Atualizar cliente — PUT /clientes/{id}
 
-### Dados independentes ou vinculados
-
-Documento, endereço e telefone podem ser cadastrados isoladamente por suas rotas. Para criar um registro já associado a um cliente, use o parâmetro `clienteId`:
-
-```http
-POST /documentos?clienteId=1
-Content-Type: application/json
-
-{"tipo":"CPF","numero":"00000000001"}
+```json
+{"nome": "Ana Souza"}
 ```
 
-O mesmo vale para `/enderecos?clienteId=1` e `/telefones?clienteId=1`. Use o ID real retornado no cadastro. Um segundo endereço para o mesmo cliente retorna 409; atualize ou exclua o endereço existente primeiro.
+As atualizações são **parciais**: campos omitidos ou nulos são preservados. Documentos e telefones enviados na atualização do cliente são adicionados quando não têm ID, ou atualizados quando o ID pertence ao cliente. Para removê-los, use suas rotas DELETE; listas vazias não removem registros.
 
-### Regras de atualização e remoção
+### Documento — POST /documentos?clienteId={clienteId} ou PUT /documentos/{id}
 
-- Para preservar o comportamento de atualização parcial do projeto-base, `PUT` altera somente campos não nulos. Campos omitidos ou nulos são preservados. Campos opcionais de texto podem ser esvaziados com `""`.
-- Atualizar cliente aceita documentos e telefones: itens sem ID são novos; itens com ID atualizam somente filhos que já pertencem àquele cliente. IDs desconhecidos, de outro cliente ou repetidos no mesmo pedido são rejeitados.
-- Listas vazias, omitidas ou nulas na atualização não removem filhos. Use o `DELETE` específico de documento ou telefone para removê-los.
-- O endereço enviado na atualização altera o existente ou cria um quando não houver. Um ID de endereço incompatível é rejeitado. O CEP também é atualizado.
-- Excluir documento, telefone ou endereço vinculado desfaz o vínculo e remove o registro, preservando o cliente.
-- Excluir cliente remove também seu endereço, documentos e telefones por cascata. Registros independentes permanecem.
-- Não informe IDs no cadastro, inclusive nos filhos. A atualização não permite trocar o ID nem transferir registros de um cliente para outro.
+```json
+{"tipo": "RG", "numero": "987654321"}
+```
 
-### Validação e respostas de erro
+### Telefone — POST /telefones?clienteId={clienteId} ou PUT /telefones/{id}
 
-São obrigatórios: nome do cliente; tipo e número do documento; DDD e número do telefone; cidade, rua e número do endereço. Filhos enviados também são validados. As listas não aceitam itens nulos.
+```json
+{"ddd": "11", "numero": "988887777"}
+```
 
-O número de documento é único, mantendo a regra do repositório original. Não há validação de dígitos verificadores de CPF/RG: o modelo admite documentos de tipos genéricos.
+### Endereço — POST /enderecos?clienteId={clienteId} ou PUT /enderecos/{id}
 
-| Código | Situação |
-|---|---|
-| 400 | Dados obrigatórios ausentes/em branco, JSON ou parâmetros inválidos, IDs incompatíveis |
-| 404 | Registro ou cliente informado não encontrado |
-| 409 | Número de documento duplicado ou conflito de relacionamento |
+```json
+{
+  "estado": "SP",
+  "cidade": "São Paulo",
+  "bairro": "Centro",
+  "rua": "Rua A",
+  "numero": "20",
+  "codigoPostal": "01001000",
+  "informacoesAdicionais": "Casa"
+}
+```
 
-Erros tratados retornam JSON com `status` e `mensagem`. As gravações são transacionais: uma falha não deixa um cadastro ou uma alteração parcialmente salvo.
+Cada cliente pode ter **um endereço**. Se já existir, use PUT para atualizar. Excluir um documento, telefone ou endereço desfaz o vínculo e preserva o cliente; excluir o cliente remove todos os seus dados associados.
 
-## Organização e banco
+São obrigatórios: nome do cliente; tipo e número do documento; DDD e número do telefone; cidade, rua e número do endereço. O número do documento deve ser único.
 
-- `entidades`: modelo JPA das quatro classes do diagrama.
-- `repositorios`: acesso ao banco com Spring Data JPA.
-- `modelo`: atualização dos campos e coleções.
-- `servicos`: transações, validação e regras de relacionamento.
-- `controles`: API HTTP e tratamento de erros.
-- `src/test`: testes automatizados de integração e regressão.
+## Respostas
 
-Projeto atualizado para **Spring Boot 4.1.1**, mantendo **Java 17** e a estrutura do projeto-base. O Maven Wrapper utiliza Maven **3.9.16**. As versões de Spring Framework, Hibernate, Jackson, H2, Lombok e bibliotecas de teste são gerenciadas pelo Spring Boot para manter compatibilidade. As APIs de persistência e validação usam Jakarta; o processamento de JSON usa Jackson 3. Dependências redundantes de Spring Data JDBC foram removidas; a persistência usa JPA. A consulta individual usa `findById`, sem carregar todos os clientes. A classe `ClienteSelecionador` foi mantida como parte da base, mas a API não depende dela.
-
-O banco padrão é **H2 em arquivo**, em `automanager/data` quando a execução parte de `automanager`. Os dados sobrevivem ao reinício. Não há inserção automática de exemplos, evitando duplicatas a cada inicialização. Execute a aplicação sempre a partir da mesma pasta para usar o mesmo banco.
-
-Os testes usam banco H2 em memória separado, recriado a cada execução. O projeto é destinado à atividade acadêmica; autenticação e publicação em servidor não fazem parte do enunciado.
-
-## Verificação
-
-Execute `mvnw.cmd clean verify` dentro de `automanager`. Os relatórios detalhados ficam em `target/surefire-reports`.
-
-A entrega atualizada passou por 23 testes automatizados no Windows com Java 17 e Maven 3.9.16. O JAR também foi verificado por chamadas HTTP e reinício com persistência dos dados. O wrapper inclui suporte a Windows e Linux/Ubuntu; não foi feita execução em Linux neste ambiente.
+- **200**: consulta ou atualização realizada.
+- **201**: cadastro criado, com registro no corpo e URL no cabeçalho `Location`.
+- **204**: exclusão realizada, sem corpo na resposta.
+- **400**: dados inválidos ou IDs incompatíveis.
+- **404**: registro ou cliente não encontrado.
+- **409**: conflito, como documento duplicado ou segundo endereço para o mesmo cliente.
